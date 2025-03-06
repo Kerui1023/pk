@@ -1,0 +1,148 @@
+"""
+Exercise 3.2.v2: Simulate a Turn-Based Battle (Updated Stub)
+"""
+"""
+Exercise 3.1: Fetch and Compare Pokémon Stats (Stub)
+- Fetch data for two Pokémon from the PokéAPI.
+- Calculate their stats at level 50.
+- Compare their base stats (e.g., attack, defense, speed).
+"""
+
+import requests
+
+class Pokemon:
+    name = ""
+    hp = 0
+    attack = 0
+    defense = 0
+    speed = 0
+    
+    def __init__(self, name, hp, attack, defense, speed) -> None:
+        self.name = name
+        self.hp = hp
+        self.attack = attack
+        self.defense = defense
+        self.speed = speed
+    
+    
+
+
+def calculate_stat(base_stat, level=50, iv=15, ev=85):
+    """Calculate Pokémon's stat at given level."""
+    return int(((2 * base_stat + iv + (ev / 4)) * level / 100) + 5)
+
+def calculate_hp(base_stat, level=50, iv=15, ev=85):
+    """Calculate Pokémon's HP at given level."""
+    return int(((2 * base_stat + iv + (ev / 4)) * level / 100) + level + 10)
+
+def calculate_damage(attacker_stats, defender_stats, level=50, base_power=60):
+    """Calculate battle damage using standard formula."""
+    return int((((2 * level * 0.4 + 2) * attacker_stats['attack'] * base_power) 
+                / (defender_stats['defense'] * 50)) + 2)
+
+def simulate_battle(pokemon1, pokemon2):
+    """Simulate a battle between two Pokémon."""
+    # TODO: Fetch Pokémon Data
+    # - Create lowercase URLs for both Pokémon
+    # - Make GET requests and check response codes
+    # - Extract JSON data if successful
+    url1 = "https://pokeapi.co/api/v2/pokemon/" + pokemon1
+    url1 = url1.lower()
+    response = requests.get(url1)
+    # print(r)
+    if response.status_code == 200:
+        # print("successful.")
+        data = response.json()
+        stats = data["stats"]
+        hp = stats[0]["base_stat"]
+        attack = stats[1]["base_stat"]
+        defense = stats[2]["base_stat"]
+        speed = stats[5]["base_stat"]
+        p1 = Pokemon(pokemon1, hp, attack, defense, speed)
+    else:
+        print("failed.")
+        
+    url2 = "https://pokeapi.co/api/v2/pokemon/" + pokemon2
+    url2 = url2.lower()
+    response = requests.get(url2)
+    # print(r)
+    if response.status_code == 200:
+        # print("successful.")
+        data = response.json()
+        stats = data["stats"]
+        hp = stats[0]["base_stat"]
+        attack = stats[1]["base_stat"]
+        defense = stats[2]["base_stat"]
+        speed = stats[5]["base_stat"]
+        p2 = Pokemon(pokemon2, hp, attack, defense, speed)
+    else:
+        print("failed.")
+
+    
+    # TODO: Calculate Initial Stats
+    # - Use calculate_stat() for attack/defense/speed
+    # - Use calculate_hp() for HP stats
+    # - Store in dictionaries
+    p1.hp = calculate_hp(p1.hp)
+    p1.attack = calculate_stat(p1.attack)
+    p1.defense = calculate_stat(p1.defense)
+    p1.speed = calculate_stat(p1.speed)
+    
+    p2.hp = calculate_hp(p2.hp)
+    p2.attack = calculate_stat(p2.attack)
+    p2.defense = calculate_stat(p2.defense)
+    p2.speed = calculate_stat(p2.speed)
+
+    # TODO: Initialise Battle Display
+    # - Show battle start message
+    # - Display initial HP values
+    
+    print("Battle Start: "+pokemon1+" vs. " +pokemon2)
+    print("Initial HP: "+pokemon1+" (",p1.hp,") vs. "+pokemon2+" ("+str(p2.hp)+")")
+
+    # TODO: Determine First Attacker
+    # - Compare speed stats
+    # - Set up attacker/defender variables
+    # - Store corresponding stats
+    if p1.speed >= p2.speed:
+        attacker = p1
+        defender = p2
+    else:
+        attacker = p2
+        defender = p1
+    
+    attacker_stats = {"attack": attacker.attack, "defense": attacker.defense}
+    defender_stats = {"attack": defender.attack, "defense": defender.defense}
+
+    # TODO: Battle Loop
+    # - Track round numbers
+    # - While both have HP > 0:
+    #   - Show current round
+    #   - Calculate and deal damage
+    #   - Check for fainting (==< 0)
+    #   - Show remaining HP
+    #   - Swap roles
+    #   - Increment round
+    rounds = 1
+    while attacker.hp>0 and defender.hp>0:
+    # if 1:
+        print("Round"+str(rounds)+": "+attacker.name+"attacks!")
+        damage = calculate_damage(attacker_stats, defender_stats)
+        defender.hp -= damage
+        if defender.hp < 0:
+            defender.hp = 0
+        print(defender.name,"has",defender.hp,"HP left.")
+        attacker, defender = defender, attacker
+        attacker_stats, defender_stats = defender_stats, attacker_stats
+        rounds += 1
+
+
+    # TODO: End Battle
+    # - Show victory message
+    # - Display winner
+
+    print(attacker.name,"is defeated!")
+    print("Winner:",defender.name,"with",defender.hp,"HP remaining!")
+
+if __name__ == "__main__":
+    simulate_battle("pikachu", "bulbasaur")
